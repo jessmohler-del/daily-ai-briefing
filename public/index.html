@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily AI & Tech Briefing</title>
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --surface: #131929;
+      --surface2: #1a2236;
+      --border: #232d45;
+      --text: #e2e8f0;
+      --text-muted: #8892a8;
+      --accent: #6c63ff;
+      --accent-glow: rgba(108, 99, 255, 0.15);
+      --green: #34d399;
+      --red: #f87171;
+      --orange: #fbbf24;
+      --blue: #60a5fa;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-left h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #6c63ff, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+
+    .header-left .date { color: var(--text-muted); font-size: 14px; }
+    .header-left .cache-info { color: var(--text-muted); font-size: 12px; margin-top: 2px; opacity: 0.7; }
+
+    .pull-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .pull-btn:hover { background: #5a52e0; transform: translateY(-1px); }
+    .pull-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .pull-btn .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    .pull-btn.loading .spinner { display: block; }
+    .pull-btn.loading .btn-text { display: none; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .market-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .market-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+
+    .market-card .name { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+    .market-card .price { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+    .market-card .change { font-size: 13px; font-weight: 600; }
+    .market-card .change.up { color: var(--green); }
+    .market-card .change.down { color: var(--red); }
+    .market-card .change.flat { color: var(--text-muted); }
+
+    .loading-state { text-align: center; padding: 80px 20px; }
+    .loading-state .big-spinner {
+      width: 48px; height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    .loading-state p { color: var(--text-muted); font-size: 15px; }
+    .loading-state .substep { color: var(--text-muted); font-size: 13px; opacity: 0.6; margin-top: 8px; }
+
+    .error-state { text-align: center; padding: 60px 20px; background: var(--surface); border: 1px solid rgba(248, 113, 113, 0.3); border-radius: 12px; }
+    .error-state h3 { color: var(--red); margin-bottom: 8px; }
+    .error-state p { color: var(--text-muted); font-size: 14px; max-width: 500px; margin: 0 auto; }
+
+    .section-title { font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 16px; margin-top: 8px; }
+
+    .story-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 14px; transition: border-color 0.2s; }
+    .story-card:hover { border-color: var(--accent); }
+    .story-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+    .story-category { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+    .story-headline { font-size: 17px; font-weight: 600; line-height: 1.4; }
+    .significance { display: flex; align-items: center; gap: 4px; flex-shrink: 0; padding-top: 2px; }
+    .sig-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+    .sig-dot.active { background: var(--accent); }
+    .sig-dot.active.high { background: var(--orange); }
+    .sig-dot.active.critical { background: var(--red); }
+    .story-summary { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
+    .story-source { font-size: 12px; color: var(--text-muted); opacity: 0.6; }
+
+    .watch-section { margin-top: 40px; }
+    .watch-card { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--blue); border-radius: 8px; padding: 16px 20px; margin-bottom: 10px; }
+    .watch-card h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: var(--blue); }
+    .watch-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+    .footer { text-align: center; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 12px; }
+
+    @media (max-width: 640px) {
+      .market-bar { grid-template-columns: repeat(2, 1fr); }
+      header { flex-direction: column; gap: 16px; }
+      .header-left h1 { font-size: 22px; }
+      .story-header { flex-direction: column; }
+    }
+
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-left">
+        <h1>Daily AI & Tech Briefing</h1>
+        <div class="date" id="dateDisplay"></div>
+        <div class="cache-info" id="cacheInfo"></div>
+      </div>
+      <button class="pull-btn" id="pullBtn" onclick="pullBriefing(true)">
+        <span class="btn-text">Pull Latest</span>
+        <div class="spinner"></div>
+      </button>
+    </header>
+
+    <div class="market-bar" id="marketBar">
+      <div class="market-card"><div class="name">NASDAQ</div><div class="price">\u2014</div><div class="change flat">Loading...</div></div>
+      <div class="market-card"><div class="name">S&P 500</div><div class="price">\u2014</div><div class="change flat">Loading...</div></div>
+      <div class="market-card"><div class="name">Bitcoin</div><div class="price">\u2014</div><div class="change flat">Loading...</div></div>
+      <div class="market-card"><div class="name">NVIDIA</div><div class="price">\u2014</div><div class="change flat">Loading...</div></div>
+    </div>
+
+    <div id="content">
+      <div class="loading-state" id="loadingState">
+        <div class="big-spinner"></div>
+        <p>Generating your briefing...</p>
+        <div class="substep">Searching the web for the latest AI & tech news</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const today = new Date();
+    document.getElementById('dateDisplay').textContent = today.toLocaleDateString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    async function loadMarket() {
+      try {
+        const res = await fetch('/api/market');
+        const json = await res.json();
+        if (!json.success) return;
+        const bar = document.getElementById('marketBar');
+        bar.innerHTML = json.data.map(m => {
+          const dir = m.change > 0 ? 'up' : m.change < 0 ? 'down' : 'flat';
+          const prefix = m.name === 'Bitcoin' ? '$' : m.name === 'NVIDIA' ? '$' : '';
+          return '<div class="market-card"><div class="name">' + m.name + '</div><div class="price">' + prefix + m.price + '</div><div class="change ' + dir + '">' + m.changeStr + '</div></div>';
+        }).join('');
+      } catch (e) { console.error('Market load error:', e); }
+    }
+
+    function renderBriefing(briefing) {
+      const content = document.getElementById('content');
+      const categories = {};
+      (briefing.stories || []).forEach(s => {
+        if (!categories[s.category]) categories[s.category] = [];
+        categories[s.category].push(s);
+      });
+      let html = '';
+      for (const [cat, stories] of Object.entries(categories)) {
+        html += '<div class="section-title">' + cat + '</div>';
+        stories.forEach((s, i) => {
+          const sigLevel = s.significance >= 5 ? 'critical' : s.significance >= 4 ? 'high' : '';
+          let dots = '';
+          for (let j = 0; j < 5; j++) {
+            dots += '<div class="sig-dot ' + (j < s.significance ? 'active ' + sigLevel : '') + '"></div>';
+          }
+          html += '<div class="story-card fade-in" style="animation-delay: ' + (i * 0.05) + 's">' +
+            '<div class="story-header"><div><div class="story-headline">' + s.headline + '</div></div>' +
+            '<div class="significance" title="Significance: ' + s.significance + '/5">' + dots + '</div></div>' +
+            '<div class="story-summary">' + s.summary + '</div>' +
+            '<div class="story-source">' + (s.source || '') + '</div></div>';
+        });
+      }
+      if (briefing.what_to_watch && briefing.what_to_watch.length) {
+        html += '<div class="watch-section"><div class="section-title">What to Watch</div>';
+        briefing.what_to_watch.forEach(w => {
+          html += '<div class="watch-card fade-in"><h4>' + w.title + '</h4><p>' + w.description + '</p></div>';
+        });
+        html += '</div>';
+      }
+      const genTime = briefing.generated_at ? new Date(briefing.generated_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Unknown';
+      html += '<div class="footer">Briefing generated at ' + genTime + ' &middot; Cached for 6 hours &middot; Powered by Claude</div>';
+      content.innerHTML = html;
+    }
+
+    async function pullBriefing(force) {
+      const btn = document.getElementById('pullBtn');
+      const content = document.getElementById('content');
+      btn.classList.add('loading');
+      btn.disabled = true;
+      content.innerHTML = '<div class="loading-state"><div class="big-spinner"></div><p>' + (force ? 'Pulling fresh briefing...' : 'Loading briefing...') + '</p><div class="substep">This may take 15-30 seconds while searching the web</div></div>';
+      try {
+        const res = await fetch('/api/briefing' + (force ? '?force=true' : ''));
+        const json = await res.json();
+        if (json.success) { renderBriefing(json.briefing); updateCacheInfo(json.briefing.generated_at); }
+        else { content.innerHTML = '<div class="error-state"><h3>Briefing Unavailable</h3><p>' + (json.error || 'Something went wrong. Try pulling again.') + '</p></div>'; }
+      } catch (err) {
+        content.innerHTML = '<div class="error-state"><h3>Connection Error</h3><p>Could not reach the server. Check your connection and try again.</p></div>';
+      }
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+
+    function updateCacheInfo(generatedAt) {
+      if (!generatedAt) return;
+      const gen = new Date(generatedAt);
+      const expires = new Date(gen.getTime() + 6 * 60 * 60 * 1000);
+      const now = new Date();
+      const remaining = Math.max(0, Math.round((expires - now) / 60000));
+      const hours = Math.floor(remaining / 60);
+      const mins = remaining % 60;
+      const timeStr = hours > 0 ? hours + 'h ' + mins + 'm' : mins + 'm';
+      document.getElementById('cacheInfo').textContent = 'Cache refreshes in ' + timeStr;
+    }
+
+    loadMarket();
+    pullBriefing(false);
+    setInterval(loadMarket, 5 * 60 * 1000);
+  </script>
+</body>
+</html>
